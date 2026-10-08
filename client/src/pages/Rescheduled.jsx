@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import "./sidebar.css";
+import "./Sidebar.css";
 const Rescheduled = () => {
   const navigate = useNavigate();
   const location = useLocation();
