@@ -10,7 +10,7 @@ import api from "../services/api";
 
 import "./MyTasks.css";
 
-import "./sidebar.css";
+import "./Sidebar.css";
 
 const initialForm = { title: "", description: "", date: "", time: "", priority: "medium" };
 
