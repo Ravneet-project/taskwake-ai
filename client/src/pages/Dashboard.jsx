@@ -48,7 +48,7 @@ import {
 
 import InstallPWA from "../components/InstallPWA";
 import "./DashboardEdu.css";
-import "./sidebar.css";
+import "./Sidebar.css";
 
 
 
