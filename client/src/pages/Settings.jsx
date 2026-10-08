@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./Settings.css";
 import { syncReminderPreferences, loadReminderPreferences, startReminderPolling } from "../services/reminderClient";
-import "./sidebar.css";
+import "./Sidebar.css";
 const STORAGE_KEY = "taskwake_settings";
 
 const defaults = {
