@@ -1,12 +1,12 @@
-# ⏰ TaskWake AI
+# TaskWake AI
 
-### Smart Task Management & Reminder Dashboard
+### Task Management and Productivity Dashboard
 
 TaskWake AI is a productivity web application designed to help users organize tasks, review reminders, track rescheduled work, and understand productivity trends from one dashboard.
 
-> **Project status:** Active development. Some features and setup details may vary depending on the backend configuration.
+**Status:** In active development. Implementation details may vary based on backend configuration.
 
-## ✨ Features
+## Features
 
 - **Dashboard** — overview of tasks and productivity activity.
 - **My Tasks** — create, view, edit, complete, and delete tasks.
@@ -17,7 +17,7 @@ TaskWake AI is a productivity web application designed to help users organize ta
 - **Authentication** — login/logout navigation and protected task experience (subject to backend configuration).
 - **Responsive interface** — React-based navigation and dashboard pages.
 
-## 🧰 Tech Stack
+## Technology Stack
 
 | Layer | Technology |
 | --- | --- |
@@ -27,7 +27,7 @@ TaskWake AI is a productivity web application designed to help users organize ta
 | Backend | Node.js, Express.js |
 | Database | Configure according to your server implementation |
 
-## 🔄 Application Flowchart
+## Application Flowchart
 
 ```mermaid
 flowchart TD
@@ -57,7 +57,7 @@ flowchart TD
     J --> D
 ```
 
-## 🏗️ Architecture
+## System Architecture
 
 ```mermaid
 flowchart LR
@@ -69,7 +69,7 @@ flowchart LR
     A --> R
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```text
 taskwake-ai/
@@ -86,7 +86,7 @@ taskwake-ai/
 └── README.md
 ```
 
-## 🚀 Run Locally
+## Local Setup
 
 **Requirements:** Node.js and npm.
 
@@ -119,7 +119,7 @@ npm run dev
 
 Open the local URL displayed by Vite (commonly `http://localhost:5173`). Ensure the frontend API base URL points to the running backend.
 
-## 🔌 API Endpoints Used by the Frontend
+## API Endpoints Referenced by the Frontend
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
@@ -132,21 +132,19 @@ Open the local URL displayed by Vite (commonly `http://localhost:5173`). Ensure 
 
 > Paths above are used by the frontend API client; its configured base URL may prepend `/api`. Verify the routes in your backend before deploying.
 
-## 🔒 Security Notes
+## Security Considerations
 
 Do **not** upload `node_modules/`, `.env`, `.env.*` (except a sanitized `.env.example`), API keys, tokens, or database credentials to GitHub. Keep secrets in environment variables.
 
-## 🛣️ Future Enhancements
+## Planned Enhancements
 
 - More detailed productivity analytics.
 - Improved reminder scheduling and notifications.
 - Expanded smart recommendations.
 - Testing, deployment documentation, and accessibility improvements.
 
-## 👩‍💻 Development
+## Development
 
 Built as a full-stack productivity application using React and Node.js.
 
 ---
-
-⭐ If you find the project useful, consider starring the repository!
