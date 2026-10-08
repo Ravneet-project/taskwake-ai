@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskWake Auth Test</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fb;
+      padding: 40px;
+    }
+
+    .box {
+      max-width: 450px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 8px 5px 8px 0;
+      cursor: pointer;
+    }
+
+    pre {
+      background: #f1f1f1;
+      padding: 15px;
+      border-radius: 10px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+
+    <h2>TaskWake AI Auth Test</h2>
+
+    <input
+      type="text"
+      id="name"
+      placeholder="Name"
+    />
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+    />
+
+    <br />
+
+    <button onclick="registerUser()">
+      Register
+    </button>
+
+    <button onclick="loginUser()">
+      Login
+    </button>
+
+    <h3>API Response</h3>
+
+    <pre id="result">Waiting...</pre>
+
+  </div>
+
+  <script>
+
+    const API = "http://localhost:5000/api/auth";
+
+    async function registerUser() {
+
+      const name = document.getElementById("name").value;
+
+      const email = document.getElementById("email").value;
+
+      const password = document.getElementById("password").value;
+
+      try {
+
+        const response = await fetch(`${API}/register`, {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            name,
+            email,
+            password
+          })
+        });
+
+        const data = await response.json();
+
+        document.getElementById("result").textContent =
+          JSON.stringify(data, null, 2);
+
+      } catch (error) {
+
+        document.getElementById("result").textContent =
+          error.message;
+      }
+    }
+
+
+    async function loginUser() {
+
+      const email = document.getElementById("email").value;
+
+      const password = document.getElementById("password").value;
+
+      try {
+
+        const response = await fetch(`${API}/login`, {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+
+        const data = await response.json();
+
+        document.getElementById("result").textContent =
+          JSON.stringify(data, null, 2);
+
+      } catch (error) {
+
+        document.getElementById("result").textContent =
+          error.message;
+      }
+    }
+
+  </script>
+
+</body>
+</html>

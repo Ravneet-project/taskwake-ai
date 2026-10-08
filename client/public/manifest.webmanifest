@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "TaskWake AI",
+  "short_name": "TaskWake",
+  "description": "AI-powered smart task alarm and automatic rescheduling application.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fc",
+  "theme_color": "#6c5ce7",
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

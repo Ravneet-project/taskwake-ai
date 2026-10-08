@@ -1,0 +1,17 @@
+{
+  "preferences": {
+    "4bc322a9-3460-4458-bb51-d95a801961cd": {
+      "browserNotifications": true,
+      "emailReminders": false,
+      "reminderMinutes": 15,
+      "dailySummary": false,
+      "soundEnabled": true,
+      "quietHoursEnabled": false,
+      "quietStart": "22:00",
+      "quietEnd": "07:00",
+      "timeZone": "Asia/Kolkata"
+    }
+  },
+  "deliveries": {},
+  "inbox": {}
+}
