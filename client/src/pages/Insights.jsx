@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 import "./Insights.css";
-import "./sidebar.css";
+import "./Sidebar.css";
 const Insights = () => {
 
   const navigate = useNavigate();
