@@ -41,7 +41,7 @@ import {
   requestNotificationPermission,
 
 } from "../services/reminderService";
-import "./sidebar.css";
+import "./Sidebar.css";
 
 
 const Reminders = () => {
