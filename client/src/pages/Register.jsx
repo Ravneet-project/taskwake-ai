@@ -38,19 +38,34 @@ const Register = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setError("");
+  setError("");
 
-    const result = await register(form);
+  const payload = {
+    name: form.name.trim(),
+    email: form.email.trim().toLowerCase(),
+    password: form.password,
+  };
+
+  if (!payload.name || !payload.email || !payload.password) {
+    setError("Please fill in all required fields");
+    return;
+  }
+
+  try {
+    const result = await register(payload);
 
     if (result.success) {
       navigate("/dashboard");
     } else {
-      setError(result.message);
+      setError(result.message || "Registration failed");
     }
-  };
+  } catch (err) {
+    setError("Something went wrong. Please try again.");
+  }
+};
 
   return (
     <div className="auth-page">
