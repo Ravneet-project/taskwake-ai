@@ -1,14 +1,7 @@
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
-const { readData, writeData } = require("../utils/db");
-const { createUser } = require("../models/User");
-
-/*
-|--------------------------------------------------------------------------
-| Generate JWT Token
-|--------------------------------------------------------------------------
-*/
+const User = require("../models/User");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -17,23 +10,22 @@ const generateToken = (user) => {
       email: user.email,
     },
     process.env.JWT_SECRET,
-    {
-      expiresIn: "7d",
-    }
+    { expiresIn: "7d" }
   );
 };
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER USER
-|--------------------------------------------------------------------------
-*/
-
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body || {};
 
-    if (!name || !email || !password) {
+    if (
+      typeof name !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !name.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         success: false,
         message: "Name, email and password are required",
@@ -47,13 +39,11 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const users = readData("users.json");
-
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingUser = users.find(
-      (user) => user.email === normalizedEmail
-    );
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (existingUser) {
       return res.status(409).json({
@@ -64,15 +54,11 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = createUser({
+    const newUser = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
     });
-
-    users.push(newUser);
-
-    writeData("users.json", users);
 
     const token = generateToken(newUser);
 
@@ -87,7 +73,14 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Register Error:", error);
+    console.error("Register Error:", error.message);
+
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "User already exists with this email",
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -96,30 +89,27 @@ const registerUser = async (req, res) => {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN USER
-|--------------------------------------------------------------------------
-*/
-
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !email.trim() ||
+      !password
+    ) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
       });
     }
 
-    const users = readData("users.json");
-
     const normalizedEmail = email.trim().toLowerCase();
 
-    const user = users.find(
-      (item) => item.email === normalizedEmail
-    );
+    const user = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (!user) {
       return res.status(401).json({
@@ -153,7 +143,7 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("Login Error:", error.message);
 
     return res.status(500).json({
       success: false,
