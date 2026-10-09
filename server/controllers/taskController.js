@@ -1,13 +1,7 @@
-const { readData, writeData } = require("../utils/db");
-const { createTask } = require("../models/Task");
 
-/*
-|--------------------------------------------------------------------------
-| CREATE TASK
-|--------------------------------------------------------------------------
-*/
+const Task = require("../models/Task");
 
-const addTask = (req, res) => {
+const addTask = async (req, res) => {
   try {
     const {
       title,
@@ -15,7 +9,7 @@ const addTask = (req, res) => {
       date,
       time,
       priority,
-    } = req.body;
+    } = req.body || {};
 
     if (!title || !date || !time) {
       return res.status(400).json({
@@ -24,29 +18,22 @@ const addTask = (req, res) => {
       });
     }
 
-    const tasks = readData("tasks.json");
-
-    const newTask = createTask({
-      userId: req.user.id,
+    const task = await Task.create({
+      userId: String(req.user.id),
       title,
-      description,
+      description: description || "",
       date,
       time,
-      priority,
+      priority: priority || "medium",
     });
-
-    tasks.push(newTask);
-
-    writeData("tasks.json", tasks);
 
     return res.status(201).json({
       success: true,
       message: "Task created successfully",
-      task: newTask,
+      task,
     });
-
   } catch (error) {
-    console.error("Add Task Error:", error);
+    console.error("Add Task Error:", error.message);
 
     return res.status(500).json({
       success: false,
@@ -55,35 +42,22 @@ const addTask = (req, res) => {
   }
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| GET USER TASKS
-|--------------------------------------------------------------------------
-*/
-
-const getTasks = (req, res) => {
+const getTasks = async (req, res) => {
   try {
-    let tasks = readData("tasks.json");
-
-    tasks = tasks.filter(
-      task => task.userId === req.user.id
-    );
-
-    tasks.sort((a, b) => {
-      const first = new Date(`${a.date}T${a.time}`);
-      const second = new Date(`${b.date}T${b.time}`);
-
-      return first - second;
-    });
+    const tasks = await Task.find({
+      userId: String(req.user.id),
+    })
+      .sort({ date: 1, time: 1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
       count: tasks.length,
       tasks,
     });
-
   } catch (error) {
+    console.error("Get Tasks Error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to fetch tasks",
@@ -91,68 +65,20 @@ const getTasks = (req, res) => {
   }
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| COMPLETE TASK
-|--------------------------------------------------------------------------
-*/
-
-const completeTask = (req, res) => {
+const completeTask = async (req, res) => {
   try {
-    const tasks = readData("tasks.json");
-
-    const taskIndex = tasks.findIndex(
-      task =>
-        task.id === req.params.id &&
-        task.userId === req.user.id
-    );
-
-    if (taskIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: "Task not found",
-      });
-    }
-
-    tasks[taskIndex].status = "completed";
-    tasks[taskIndex].completedAt =
-      new Date().toISOString();
-
-    tasks[taskIndex].updatedAt =
-      new Date().toISOString();
-
-    writeData("tasks.json", tasks);
-
-    return res.status(200).json({
-      success: true,
-      message: "Task completed 🎉",
-      task: tasks[taskIndex],
-    });
-
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Unable to complete task",
-    });
-  }
-};
-
-
-/*
-|--------------------------------------------------------------------------
-| DELETE TASK
-|--------------------------------------------------------------------------
-*/
-
-const deleteTask = (req, res) => {
-  try {
-    const tasks = readData("tasks.json");
-
-    const task = tasks.find(
-      item =>
-        item.id === req.params.id &&
-        item.userId === req.user.id
+    const task = await Task.findOneAndUpdate(
+      {
+        id: req.params.id,
+        userId: String(req.user.id),
+      },
+      {
+        $set: {
+          status: "completed",
+          completedAt: new Date(),
+        },
+      },
+      { new: true }
     );
 
     if (!task) {
@@ -162,18 +88,42 @@ const deleteTask = (req, res) => {
       });
     }
 
-    const updatedTasks = tasks.filter(
-      item => item.id !== req.params.id
-    );
+    return res.status(200).json({
+      success: true,
+      message: "Task completed 🎉",
+      task,
+    });
+  } catch (error) {
+    console.error("Complete Task Error:", error.message);
 
-    writeData("tasks.json", updatedTasks);
+    return res.status(500).json({
+      success: false,
+      message: "Unable to complete task",
+    });
+  }
+};
+
+const deleteTask = async (req, res) => {
+  try {
+    const task = await Task.findOneAndDelete({
+      id: req.params.id,
+      userId: String(req.user.id),
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
       message: "Task deleted successfully",
     });
-
   } catch (error) {
+    console.error("Delete Task Error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to delete task",
@@ -181,78 +131,57 @@ const deleteTask = (req, res) => {
   }
 };
 
-
-/*
-|--------------------------------------------------------------------------
-| AUTO RESCHEDULE MISSED TASKS
-|--------------------------------------------------------------------------
-*/
-
-const autoRescheduleTasks = (req, res) => {
+const autoRescheduleTasks = async (req, res) => {
   try {
-
-    const tasks = readData("tasks.json");
+    const tasks = await Task.find({
+      userId: String(req.user.id),
+      status: { $ne: "completed" },
+    });
 
     const now = new Date();
-
     let rescheduledCount = 0;
 
-    tasks.forEach(task => {
-
-      if (
-        task.userId !== req.user.id ||
-        task.status === "completed"
-      ) {
-        return;
-      }
-
+    for (const task of tasks) {
       const taskDateTime = new Date(
         `${task.date}T${task.time}`
       );
 
-      if (taskDateTime < now) {
-
-        const nextDate = new Date(taskDateTime);
-
-        nextDate.setDate(
-          nextDate.getDate() + 1
-        );
-
-        task.date = nextDate
-          .toISOString()
-          .split("T")[0];
-
-        task.missedCount =
-          (task.missedCount || 0) + 1;
-
-        task.carriedForward = true;
-
-        /*
-        |--------------------------------------------------------------------------
-        | SMART PRIORITY
-        |--------------------------------------------------------------------------
-        */
-
-        if (task.missedCount >= 2) {
-          task.priority = "high";
-        }
-
-        task.updatedAt =
-          new Date().toISOString();
-
-        rescheduledCount++;
+      if (
+        Number.isNaN(taskDateTime.getTime()) ||
+        taskDateTime >= now
+      ) {
+        continue;
       }
-    });
 
-    writeData("tasks.json", tasks);
+      const nextDate = new Date(
+        `${task.date}T12:00:00Z`
+      );
+
+      if (Number.isNaN(nextDate.getTime())) {
+        continue;
+      }
+
+      nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+
+      task.date = nextDate.toISOString().split("T")[0];
+      task.missedCount = (task.missedCount || 0) + 1;
+      task.carriedForward = true;
+
+      if (task.missedCount >= 2) {
+        task.priority = "high";
+      }
+
+      await task.save();
+      rescheduledCount++;
+    }
 
     return res.status(200).json({
       success: true,
       message: `${rescheduledCount} task(s) automatically rescheduled`,
       rescheduledCount,
     });
-
   } catch (error) {
+    console.error("Reschedule Error:", error.message);
 
     return res.status(500).json({
       success: false,
@@ -260,7 +189,6 @@ const autoRescheduleTasks = (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   addTask,
