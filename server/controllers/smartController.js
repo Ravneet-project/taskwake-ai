@@ -1,34 +1,36 @@
-const { readData } = require("../utils/db");
 
-const {
-  analyzeTasks,
-} = require("../services/smartEngine");
+const Task = require("../models/Task");
 
-const getSmartInsight = (req, res) => {
+const { analyzeTasks } = require("../services/smartEngine");
+
+/*
+|--------------------------------------------------------------------------
+| GET SMART PRODUCTIVITY INSIGHT
+|--------------------------------------------------------------------------
+*/
+
+const getSmartInsight = async (req, res) => {
   try {
-    const allTasks = readData("tasks.json");
+    const userId = String(req.user.id);
 
-    const userTasks = allTasks.filter(
-      (task) => task.userId === req.user.id
-    );
+    // Fetch only logged-in user's tasks from MongoDB
+    const userTasks = await Task.find({
+      userId: userId,
+    }).lean();
 
-    const insight =
-      analyzeTasks(userTasks);
+    // Analyze tasks using existing smart engine
+    const insight = analyzeTasks(userTasks);
 
     return res.status(200).json({
       success: true,
       insight,
     });
   } catch (error) {
-    console.error(
-      "Smart Insight Error:",
-      error
-    );
+    console.error("Smart Insight Error:", error);
 
     return res.status(500).json({
       success: false,
-      message:
-        "Unable to generate productivity insight",
+      message: "Unable to generate productivity insight",
     });
   }
 };
