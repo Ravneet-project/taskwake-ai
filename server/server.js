@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const connectDB = require("./config/db");
+
 const authRoutes = require("./routes/authRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const smartRoutes = require("./routes/smartRoutes");
@@ -10,12 +12,9 @@ const mailRoutes = require("./routes/mailRoutes");
 
 const authMiddleware = require("./middleware/authMiddleware");
 const notificationRoutes = require("./routes/notificationRoutes");
-const { readData } = require("./utils/db");
-const { startScheduler } = require("./services/reminderEngine");
 
 const app = express();
 
-// Allowed frontend domains
 const allowedOrigins = [
   "https://ravneet-project.github.io",
   "https://taskwake-ai.netlify.app",
@@ -39,7 +38,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API health check
 const healthCheck = (req, res) => {
   res.json({
     success: true,
@@ -51,7 +49,6 @@ app.get("/", healthCheck);
 app.get("/api", healthCheck);
 app.get("/api/health", healthCheck);
 
-// Existing API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/smart", smartRoutes);
@@ -63,7 +60,6 @@ app.use(
   notificationRoutes()
 );
 
-// API 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -72,26 +68,28 @@ app.use((req, res) => {
   });
 });
 
-// Export Express app for Netlify Functions
 module.exports = app;
 
-// Start HTTP server and reminder scheduler only locally
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log("TaskWake AI backend started");
+  const startServer = async () => {
+    try {
+      await connectDB();
 
-    startScheduler({
-      listTasks: async () => readData("tasks.json"),
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log("TaskWake AI backend started");
+      });
 
-      findUser: async (id) =>
-        (readData("users.json") || []).find(
-          (u) => String(u.id ?? u._id) === String(id)
-        ),
-    });
+      // Reminder scheduler will be enabled after
+      // migrating its JSON storage to MongoDB.
 
-    console.log("TaskWake AI reminder scheduler started");
-  });
+    } catch (error) {
+      console.error("Server startup failed:", error.message);
+      process.exit(1);
+    }
+  };
+
+  startServer();
 }
