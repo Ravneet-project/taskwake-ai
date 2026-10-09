@@ -1,15 +1,38 @@
+
+const mongoose = require("mongoose");
 const { randomUUID } = require("crypto");
 
-const createUser = ({ name, email, password }) => {
-  return {
-    id: randomUUID(),
-    name,
-    email,
-    password,
-    createdAt: new Date().toISOString(),
-  };
-};
+const userSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      default: randomUUID,
+      unique: true,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+);
 
-module.exports = {
-  createUser,
-};
+userSchema.index({ email: 1 }, { unique: true });
+
+module.exports = mongoose.model("User", userSchema);
