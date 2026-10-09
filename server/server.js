@@ -15,11 +15,14 @@ const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
+
 const allowedOrigins = [
-  "https://ravneet-project.github.io",
+  "https://taskwakeai.onrender.com",
   "https://taskwake-ai.netlify.app",
+  "https://ravneet-project.github.io",
   "http://localhost:5173",
 ];
+
 
 app.use(
   cors({
