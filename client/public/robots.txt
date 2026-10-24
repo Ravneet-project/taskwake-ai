@@ -1,0 +1,11 @@
+
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /tasks
+Disallow: /reminders
+Disallow: /rescheduled
+Disallow: /insights
+Disallow: /settings
+
+Sitemap: https://taskwakeai.onrender.com/sitemap.xml
